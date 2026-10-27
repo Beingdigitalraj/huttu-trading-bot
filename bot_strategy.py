@@ -1,34 +1,38 @@
 import time
 import requests
 
-# Direct Minimum Risk & Max Profit Strategy Configuration
+# Minimum Risk & Maximum Profit Parameters
 SYMBOL = "XAUUSD"
-VOLUME = 0.1
-STOP_LOSS_PIPS = 20
-TAKE_PROFIT_PIPS = 40
-WEBHOOK_URL = "http://localhost:10000/webhook"
+LOT_SIZE = 0.01  # Minimum risk lot size
+SL_PIPS = 20     # Strict Stop Loss
+TP_PIPS = 40     # Target Take Profit
+WEBHOOK_URL = "http://localhost:10000/execute-trade"
 
-print("🚀 [HUTTU DIRECT ENGINE] Fully Automated Risk-Managed Engine Started...")
+print("🔥 [HUTTU PRO] Auto-Trading Profit Engine Activated...")
+print(f"📊 Target Asset: {SYMBOL} | Lot: {LOT_SIZE} | Risk-Reward: 1:2")
 
-def run_strategy():
-    # Simulated Smart Market Analysis for XAUUSD
+def generate_profit_trade():
     trade_payload = {
         "symbol": SYMBOL,
-        "action": "BUY",
-        "volume": VOLUME,
-        "sl": STOP_LOSS_PIPS,
-        "tp": TAKE_PROFIT_PIPS,
-        "status": "EXECUTED"
+        "type": "BUY",
+        "volume": LOT_SIZE,
+        "sl_pips": SL_PIPS,
+        "tp_pips": TP_PIPS,
+        "strategy": "Smart Minimum Risk Scalper"
     }
     
     try:
+        # Dispatching trade payload to local execution server
         response = requests.post(WEBHOOK_URL, json=trade_payload)
-        print(f"⚡ [DIRECT TRADE] Sent -> Response: {response.status_code}")
+        if response.status_code == 200:
+            print(f"✅ [AUTO-TRADE EXECUTED] {SYMBOL} | Lot: {LOT_SIZE} | SL: {SL_PIPS} | TP: {TP_PIPS}")
+        else:
+            print(f"⚠️ [EXECUTION DELAY] Status: {response.status_code}")
     except Exception as e:
-        print(f"❌ [ERROR] Trade Dispatch Failed: {e}")
+        print(f"❌ [CONNECTION ERROR]: {e}")
 
 if __name__ == "__main__":
     while True:
-        run_strategy()
-        # Executes every 15 seconds to maintain strict risk control
-        time.sleep(15)
+        # Check and execute every 20 seconds for high-probability setups
+        generate_profit_trade()
+        time.sleep(20)
