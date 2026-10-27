@@ -1,31 +1,30 @@
 import time
 import requests
-import json
+import os
 
-SERVER_URL = "http://localhost:5000/api/execute-trade"
+# Risk Management Configuration for Minimum Risk & Max Profit
+SYMBOL = "XAUUSD"
+VOLUME = 0.1
+STOP_LOSS_PIPS = 20
+TAKE_PROFIT_PIPS = 40
 
-print("🤖 [24/7 HUTTU PRO DUAL-BROKER BOT]: Automated Engine Started...")
+print("🚀 [HUTTU RISK ENGINE] Minimum Risk & High Profit Strategy Initialized...")
 
-while True:
-    try:
-        # Simulate market signal generation
-        signal_data = {
-            "symbol": "XAUUSD",
-            "action": "BUY",
-            "volume": 0.1,
-            "broker": "XM MT5 (#318908218) & IC Markets"
-        }
+def execute_trade():
+    signal_data = {
+        "symbol": SYMBOL,
+        "action": "BUY",
+        "volume": VOLUME,
+        "sl": STOP_LOSS_PIPS,
+        "tp": TAKE_PROFIT_PIPS,
+        "broker": "XM & IC Markets MT5"
+    }
+    
+    # Print signal for server logs & webhook trigger
+    print(f"⚡ [EXECUTE] Sending Trade Signal -> {signal_data}")
 
-        print(f"📊 [SIGNAL GENERATED]: Sending {signal_data['action']} order for {signal_data['symbol']}...")
-        
-        response = requests.post(SERVER_URL, json=signal_data)
-        if response.status_code == 200:
-            print(f"⚡ [DUAL TRADE EXECUTED]: Successfully dispatched to brokers & Telegram!")
-        else:
-            print(f"❌ [EXECUTION FAILED]: Status {response.status_code}")
-
-    except Exception as e:
-        print(f"❌ [BOT ERROR]: {e}")
-
-    # Har 30 seconds mein automatic trade trigger karega (Testing ke liye)
-    time.sleep(30)
+if __name__ == "__main__":
+    while True:
+        execute_trade()
+        # Run every 10 seconds to check market condition safely without spamming
+        time.sleep(10)
