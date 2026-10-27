@@ -1,15 +1,12 @@
 {
-  "name": "huttu-pro-engine",
+  "name": "huttu-trading-bot",
   "version": "1.0.0",
-  "description": "24/7 Automated Trading and Signal Bridge",
+  "description": "Auto Trading Engine",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js & python bot_strategy.py"
+    "start": "node server.js & python3 bot_strategy.py"
   },
   "dependencies": {
     "express": "^4.18.2"
-  },
-  "engines": {
-    "node": "18.x"
   }
 }
