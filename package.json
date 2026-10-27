@@ -4,7 +4,7 @@
   "description": "24/7 Automated Trading and Signal Bridge",
   "main": "server.js",
   "scripts": {
-    "start": "pip install -r requirements.txt && node server.js & python bot_strategy.py"
+    "start": "node server.js & python bot_strategy.py"
   },
   "dependencies": {
     "express": "^4.18.2"
