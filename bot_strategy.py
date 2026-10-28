@@ -7,36 +7,49 @@ server = os.environ.get("MT5_SERVER")
 
 print("Starting Huttu Windows Auto-Trader Engine...")
 
-if account and password and server:
-    account = int(account)
-    initialized = mt5.initialize(login=account, password=password, server=server)
-    if not initialized:
-        print(f"MT5 Initialize Failed, error code: {mt5.last_error()}")
-    else:
-        print(f"Successfully logged into MT5 Account: {account}")
+# 1. Initialize MT5 Terminal properly
+if not mt5.initialize():
+    print(f"MT5 Initialize Failed, error code: {mt5.last_error()}")
 else:
-    print("Running in simulation mode (Set MT5 Secrets in GitHub for Live Orders).")
+    print("MT5 Terminal initialized successfully.")
+    
+    if account and password and server:
+        account_id = int(account)
+        authorized = mt5.login(login=account_id, password=password, server=server)
+        if not authorized:
+            print(f"Failed to connect to account, error code: {mt5.last_error()}")
+        else:
+            print(f"Successfully logged into MT5 Account: {account_id}")
+    else:
+        print("Running in simulation mode (Secrets missing)")
 
-SYMBOL = "XAUUSD"
+# 2. Automatically detect correct Gold symbol for XM/IC Markets
+POSSIBLE_SYMBOLS = ["XAUUSD", "XAUUSDm", "XAUUSD.a", "GOLD"]
+SYMBOL = None
+
+for s in POSSIBLE_SYMBOLS:
+    symbol_info = mt5.symbol_info(s)
+    if symbol_info is not None:
+        SYMBOL = s
+        break
+
 LOT = 0.01
 SL_PIPS = 20
 TP_PIPS = 40
 
 def send_live_order():
-    if not mt5.terminal_info():
-        print("MT5 Terminal not active/connected.")
+    if SYMBOL is None:
+        print("Error: Gold symbol (XAUUSD/XAUUSDm/GOLD) not found on this broker server.")
         return
 
     symbol_info = mt5.symbol_info(SYMBOL)
-    if symbol_info is None:
-        print(f"Symbol {SYMBOL} not found.")
-        return
-
     if not symbol_info.visible:
-        mt5.symbol_select(SYMBOL, True)
+        if not mt5.symbol_select(SYMBOL, True):
+            print(f"Failed to select symbol {SYMBOL}")
+            return
 
     point = mt5.symbol_info(SYMBOL).point
-    price = mt5.symbol_info_out(SYMBOL).ask
+    price = mt5.symbol_info_tick(SYMBOL).ask
     sl = price - (SL_PIPS * 10 * point)
     tp = price + (TP_PIPS * 10 * point)
 
@@ -61,7 +74,7 @@ def send_live_order():
     elif result.retcode != mt5.TRADE_RETCODE_DONE:
         print(f"Order failed with retcode: {result.retcode}")
     else:
-        print(f"LIVE TRADE SUCCESS! Ticket ID: {result.order} | Entry: {price}")
+        print(f"LIVE TRADE SUCCESS! Ticket ID: {result.order} | Entry: {price} | Symbol: {SYMBOL}")
 
 if __name__ == "__main__":
     send_live_order()
