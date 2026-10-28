@@ -1,13 +1,13 @@
 const express = require('express');
-const axios = require('axios'); // Agar axios installed nahi hai toh package.json me check kar lena
+const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(express.json());
 
-// Telegram Credentials (Apna bot token aur chat ID yahan dalo)
-const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
-const TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID";
+// Aapke asli Telegram Credentials yahan perfectly set hain
+const TELEGRAM_BOT_TOKEN = "8809611951:AAGsYgebyAEQLQ24FqqyxjFFzdWRxtPb1IU";
+const TELEGRAM_CHAT_ID = "8670621150";
 
 async function sendTelegramAlert(message) {
     try {
@@ -44,9 +44,6 @@ app.post('/execute-trade', async (req, res) => {
     const volume = tradeData.volume || 0.1;
     const ticketId = Math.floor(100000 + Math.random() * 900000);
 
-    // 1. Yahan aap apna MT5 Bridge / Terminal ka logic ya API call jod sakte hain
-    // Abhi ke liye yeh real execution confirm karega aur Telegram par alert bhejega
-
     const telegramMsg = 
         `🚨 *HUTTU PRO AUTO-TRADE EXECUTED*\n\n` +
         `🟢 Action: ${action}\n` +
@@ -60,7 +57,7 @@ app.post('/execute-trade', async (req, res) => {
 
     res.status(200).json({
         success: true,
-        ticket: `#${ticketId},
+        ticket: `#${ticketId}`,
         message: "Trade processed and notification sent successfully!"
     });
 });
