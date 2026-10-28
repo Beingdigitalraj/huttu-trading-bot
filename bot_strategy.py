@@ -1,7 +1,6 @@
 import os
 import MetaTrader5 as mt5
 
-# Retrieve credentials securely from GitHub Secrets
 account = os.environ.get("MT5_ACCOUNT")
 password = os.environ.get("MT5_PASSWORD")
 server = os.environ.get("MT5_SERVER")
@@ -18,7 +17,6 @@ if account and password and server:
 else:
     print("Running in simulation mode (Set MT5 Secrets in GitHub for Live Orders).")
 
-# Strategy Parameters
 SYMBOL = "XAUUSD"
 LOT = 0.01
 SL_PIPS = 20
