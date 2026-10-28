@@ -1,33 +1,32 @@
 name: Huttu Auto Trader (Windows Engine)
 
 on:
+  workflow_dispatch:
   schedule:
-    # Har 15 minute mein auto-run hoga (Aap timing change kar sakte ho)
-    - cron: '*/15 * * * *'
-  workflow_dispatch: # Manual trigger button for instant testing
+    - cron: '0 * * * *' # Har ghante (Every hour) auto-run hoga
 
 jobs:
   trade_execution:
     runs-on: windows-latest
-
+    
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: Install MetaTrader5 & Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install MetaTrader5 requests
+      - name: Install MetaTrader5 & Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install MetaTrader5
 
-    - name: Execute Live MT5 Trade
-      env:
-        MT5_ACCOUNT: ${{ secrets.MT5_ACCOUNT }}
-        MT5_PASSWORD: ${{ secrets.MT5_PASSWORD }}
-        MT5_SERVER: ${{ secrets.MT5_SERVER }}
-      run: |
-        python bot_strategy.py
+      - name: Execute Live MT5 Trade
+        env:
+          MT5_ACCOUNT: ${{ secrets.MT5_ACCOUNT }}
+          MT5_PASSWORD: ${{ secrets.MT5_PASSWORD }}
+          MT5_SERVER: ${{ secrets.MT5_SERVER }}
+        run: |
+          python bot_strategy.py
