@@ -24,8 +24,11 @@ jobs:
           pip install MetaTrader5
 
       - name: Download and Install MT5 Terminal
+        shell: powershell
         run: |
-          Invoke-WebRequest -Uri "https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe" -OutFile "mt5setup.exe"
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+          [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
+          curl.exe -sS -L -o mt5setup.exe "https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe"
           Start-Process -FilePath "mt5setup.exe" -ArgumentList "/silent" -Wait
           Start-Sleep -Seconds 10
 
