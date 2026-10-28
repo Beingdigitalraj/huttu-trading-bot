@@ -3,7 +3,7 @@ name: Huttu Auto Trader (Windows Engine)
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Har ghante (Every hour) auto-run hoga
+    - cron: '0 * * * *'
 
 jobs:
   trade_execution:
@@ -22,6 +22,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install MetaTrader5
+
+      - name: Download and Install MT5 Terminal
+        run: |
+          Invoke-WebRequest -Uri "https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe" -OutFile "mt5setup.exe"
+          Start-Process -FilePath "mt5setup.exe" -ArgumentList "/silent" -Wait
+          Start-Sleep -Seconds 10
 
       - name: Execute Live MT5 Trade
         env:
