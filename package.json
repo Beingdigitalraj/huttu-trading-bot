@@ -1,12 +1,3 @@
-{
-  "name": "huttu-trading-bot",
-  "version": "1.0.0",
-  "description": "Auto Trading Engine",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js & python3 bot_strategy.py"
+    "start": "node server.js"
   },
-  "dependencies": {
-    "express": "^4.18.2"
-  }
-}
