@@ -1,15 +1,17 @@
 import os
+import time
 import MetaTrader5 as mt5
 
 account = os.environ.get("MT5_ACCOUNT")
 password = os.environ.get("MT5_PASSWORD")
 server = os.environ.get("MT5_SERVER")
 
-print("Starting Huttu Windows Auto-Trader Engine...")
+print("Starting Huttu Autonomous Market Scanner & Trader...")
 
 # 1. Initialize MT5 Terminal properly
 if not mt5.initialize():
     print(f"MT5 Initialize Failed, error code: {mt5.last_error()}")
+    exit()
 else:
     print("MT5 Terminal initialized successfully.")
     
@@ -33,49 +35,72 @@ for s in POSSIBLE_SYMBOLS:
         SYMBOL = s
         break
 
+if SYMBOL is None:
+    print("Error: Gold symbol (XAUUSD/XAUUSDm/GOLD) not found on this broker server.")
+    mt5.shutdown()
+    exit()
+
 LOT = 0.01
 SL_PIPS = 20
 TP_PIPS = 40
 
-def send_live_order():
-    if SYMBOL is None:
-        print("Error: Gold symbol (XAUUSD/XAUUSDm/GOLD) not found on this broker server.")
-        return
-
+def check_market_and_trade():
     symbol_info = mt5.symbol_info(SYMBOL)
     if not symbol_info.visible:
         if not mt5.symbol_select(SYMBOL, True):
             print(f"Failed to select symbol {SYMBOL}")
             return
 
-    point = mt5.symbol_info(SYMBOL).point
-    price = mt5.symbol_info_tick(SYMBOL).ask
-    sl = price - (SL_PIPS * 10 * point)
-    tp = price + (TP_PIPS * 10 * point)
+    # 5 Minute timeframe par last candles fetch karo
+    rates = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M5, 0, 3)
+    if rates is None or len(rates) < 3:
+        print("Failed to fetch market rates data.")
+        return
 
-    request = {
-        "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": SYMBOL,
-        "volume": LOT,
-        "type": mt5.ORDER_TYPE_BUY,
-        "price": price,
-        "sl": sl,
-        "tp": tp,
-        "deviation": 20,
-        "magic": 100200,
-        "comment": "Huttu GitHub AutoTrade",
-        "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_IOC,
-    }
+    # Simple Strategy Condition (Jaise: Agar last candle bullish hai)
+    last_candle = rates[-1]
+    is_bullish = last_candle['close'] > last_candle['open']
 
-    result = mt5.order_send(request)
-    if result is None:
-        print("Order send failed, returned None")
-    elif result.retcode != mt5.TRADE_RETCODE_DONE:
-        print(f"Order failed with retcode: {result.retcode}")
+    print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Scanning {SYMBOL} on M5... Bullish Signal: {is_bullish}")
+
+    if is_bullish:
+        point = mt5.symbol_info(SYMBOL).point
+        price = mt5.symbol_info_tick(SYMBOL).ask
+        sl = price - (SL_PIPS * 10 * point)
+        tp = price + (TP_PIPS * 10 * point)
+
+        request = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": SYMBOL,
+            "volume": LOT,
+            "type": mt5.ORDER_TYPE_BUY,
+            "price": price,
+            "sl": sl,
+            "tp": tp,
+            "deviation": 20,
+            "magic": 100200,
+            "comment": "Huttu Autonomous Scanner",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC,
+        }
+
+        result = mt5.order_send(request)
+        if result is None:
+            print("Order send failed, returned None")
+        elif result.retcode != mt5.TRADE_RETCODE_DONE:
+            print(f"Order failed with retcode: {result.retcode}")
+        else:
+            print(f"LIVE TRADE SUCCESS! Ticket ID: {result.order} | Entry: {price} | Symbol: {SYMBOL}")
     else:
-        print(f"LIVE TRADE SUCCESS! Ticket ID: {result.order} | Entry: {price} | Symbol: {SYMBOL}")
+        print("No trade condition met in this candle. Waiting...")
 
 if __name__ == "__main__":
-    send_live_order()
-    mt5.shutdown()
+    try:
+        while True:
+            check_market_and_trade()
+            # 5 minute (300 seconds) ka wait karega agle scan ke liye
+            print("Waiting 5 minutes for the next market check...\n")
+            time.sleep(300)
+    except KeyboardInterrupt:
+        mt5.shutdown()
+        print("Autonomous bot stopped safely.")
